@@ -1,29 +1,20 @@
 'use strict';
 
-let isSetListPosition = false;
-
 $(function () {
-	const setListPosition = () => {
-		const lists = $('#green-dot-lists').children();
-		const length = lists.length;
-		const rotate = Math.floor(360 / length);
-		const parentXPos = $('#green-dot-lists')[0].getBoundingClientRect().left;
-		const parentYPos = $('#green-dot-lists')[0].getBoundingClientRect().top;
+	const showPannel = (index) => {
+		const pannels = $('.pannels').children();
 
-		for (let i = 0; i < length; i++) {
-			const pos = {};
-			const list = $(lists[i]);
+		for (let i = 0; i < pannels.length; i++) {
+			const pannel = $(pannels[i]);
 
-			list.css('transform', `rotate(+${rotate * i}deg) translate(0, -50%)`);
-			list.children().css('transform', `rotate(${-(rotate * i)}deg)`);
-
-			pos.x = list.children()[0].getBoundingClientRect().left - parentXPos;
-			pos.y = list.children()[0].getBoundingClientRect().top - parentYPos + 25;
-
-			list.css('width', '110px');
-			list.css('height', '100px');
-			list.css('top', `${pos.y}px`);
-			list.css('left', `${pos.x}px`);
+			if (i === index) {
+				if (!pannel.hasClass('show-pannel')) {
+					pannel.addClass('addClass');
+				}
+			}
+			else if (pannel.hasClass('show-pannel')) {
+				pannel.removeClass('show-pannel');
+			}
 		}
 	}
 
@@ -44,7 +35,7 @@ $(function () {
 
 			if (isMobileDevice) {
 				listsWrapper.on('touchmove', touchMove);
-				listsWrapper.on('touchEnd', touchEnd);
+				listsWrapper.on('touchend', touchEnd);
 			} else {
 				listsWrapper.on('mousemove', touchMove);
 				listsWrapper.on('mouseup', touchEnd);
@@ -59,9 +50,12 @@ $(function () {
 
 		const touchMove = (event) => {
 			const newRadius = getRadius(event);
+
 			targetRadius += (newRadius - previousRadius);
-			const rotate = targetRadius / Math.PI * 180;
+
 			previousRadius = newRadius;
+			const rotate = targetRadius / Math.PI * 180;
+
 			listsWrapper.css('transform', `rotate(${rotate}deg)`);
 
 			for (let i = 0; i < lists.length; i++) {
@@ -70,7 +64,23 @@ $(function () {
 		}
 
 		const touchEnd = () => {
-			console.log('end');
+			let rotate = targetRadius / Math.PI * 180;
+
+			rotate = rotate % 45 > 45 / 2 ? rotate + (45 - rotate % 45) : rotate - (rotate % 45);
+
+			listsWrapper.css('transform', `rotate(${rotate}deg)`);
+
+			for (let i = 0; i < lists.length; i++) {
+				$(lists[i]).css('transform', `rotate(${-rotate}deg)`);
+			}
+
+			if (isMobileDevice) {
+				listsWrapper.off('touchmove');
+				listsWrapper.off('touchend');
+			} else {
+				listsWrapper.off('mousemove');
+				listsWrapper.off('mouseup');
+			}
 		}
 
 		const getRadius = (event) => {
@@ -107,17 +117,16 @@ $(function () {
 		}
 	}
 
+	showPannel(0);
+
 	$('#green-dot-button').on('click', () => {
-		$('.green-dot-wrapper').fadeIn(250).show();
+		$('.layer').fadeIn(250).show();
 		$('#green-dot-button').hide();
-		if (!isSetListPosition) {
-			setListPosition();
-			isSetListPosition = true;
-		}
+
 		rotateList();
 	})
 	$('#green-dot-close-button').on('click', () => {
-		$('.green-dot-wrapper').fadeOut(250);
+		$('.layer').fadeOut(250);
 		$('#green-dot-button').show();
 	})
 })
